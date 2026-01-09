@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Probe Designer (Static JS)</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 16px; }
+    .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+    .card { border: 1px solid #8885; border-radius: 10px; padding: 12px; flex: 1 1 360px; }
+    textarea { width: 100%; height: 180px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    label { display: block; margin: 8px 0 4px; font-weight: 600; }
+    input[type="number"], input[type="text"], select { width: 180px; }
+    button { padding: 8px 10px; border-radius: 8px; border: 1px solid #8886; cursor: pointer; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    .toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 8px; }
+    .muted { opacity: 0.75; font-size: 0.9em; }
+    .stats { white-space: pre-wrap; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 0.9em; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #8884; padding: 6px 8px; vertical-align: top; }
+    th { position: sticky; top: 0; background: canvas; cursor: pointer; user-select: none; }
+    td.seq { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    .tablewrap { max-height: 60vh; overflow: auto; border: 1px solid #8885; border-radius: 10px; }
+    .right { margin-left: auto; }
+    .checkbox-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .checkbox-row label { margin: 0; font-weight: 500; }
+  </style>
+</head>
+<body>
+  <h2>Probe Designer (Static JS)</h2>
+
+  <div class="row">
+    <div class="card">
+      <label>FASTA input</label>
+      <textarea id="fasta" placeholder=">target1
+ACGT...
+>target2
+ACGT..."></textarea>
+
+      <div class="toolbar">
+        <input id="file" type="file" accept=".fa,.fasta,.fna,.txt" />
+        <button id="example">Load example</button>
+      </div>
+
+      <div class="toolbar">
+        <button id="run">Design probes</button>
+        <span class="muted" id="status"></span>
+      </div>
+
+      <div class="stats" id="stats"></div>
+    </div>
+
+    <div class="card">
+      <label>Parameters</label>
+
+      <label>Assay</label>
+      <select id="assay">
+        <option value="visium">Visium</option>
+        <option value="flex">Chromium Flex</option>
+      </select>
+
+      <div id="visiumOptions">
+        <label>Visium version</label>
+        <select id="visiumVersion">
+          <option value="">default</option>
+          <option value="v1">v1</option>
+          <option value="v2">v2</option>
+          <option value="hd">hd</option>
+        </select>
+      </div>
+
+      <div id="flexOptions" hidden>
+        <div class="row">
+          <div>
+            <label>Flex version</label>
+            <select id="flexVersion">
+              <option value="v1">v1</option>
+              <option value="v2">v2</option>
+              <option value="v2_4plex">v2 4-plex</option>
+            </select>
+          </div>
+          <div>
+            <label>Flex mode</label>
+            <select id="flexMode">
+              <option value="singleplex">singleplex</option>
+              <option value="multiplex">multiplex</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Flex barcode (multiplex)</label>
+            <select id="flexBarcode">
+              <option value="BC001">BC001</option>
+              <option value="BC002">BC002</option>
+              <option value="BC003">BC003</option>
+              <option value="BC004">BC004</option>
+              <option value="BC005">BC005</option>
+              <option value="BC006">BC006</option>
+              <option value="BC007">BC007</option>
+              <option value="BC008">BC008</option>
+              <option value="BC009">BC009</option>
+              <option value="BC010">BC010</option>
+              <option value="BC011">BC011</option>
+              <option value="BC012">BC012</option>
+              <option value="BC013">BC013</option>
+              <option value="BC014">BC014</option>
+              <option value="BC015">BC015</option>
+              <option value="BC016">BC016</option>
+            </select>
+          </div>
+          <div>
+            <label>Flex NN (v1)</label>
+            <input id="flexNN" type="text" value="NN" />
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Probe length</label>
+          <input id="probeLen" type="number" min="50" max="50" value="50" disabled />
+        </div>
+        <div>
+          <label>Min spacing (nt)</label>
+          <input id="minSpacing" type="number" min="0" max="100000" value="50" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>GC min</label>
+          <input id="gcMin" type="number" min="0" max="1" step="0.01" value="0.44" />
+        </div>
+        <div>
+          <label>GC max</label>
+          <input id="gcMax" type="number" min="0" max="1" step="0.01" value="0.72" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Max homopolymer run</label>
+          <input id="maxHpoly" type="number" min="1" max="30" value="6" />
+        </div>
+        <div>
+          <label>Max probes per target</label>
+          <input id="maxProbes" type="number" min="1" max="100000" value="12" />
+        </div>
+      </div>
+
+      <div class="checkbox-row" style="margin-top: 6px;">
+        <label><input id="ligationA" type="checkbox" checked /> Require LHS 3' base = T (ligation)</label>
+        <label><input id="autoPick" type="checkbox" /> Auto-pick (3 probes, spacing >= 50)</label>
+      </div>
+
+      <label>Output naming</label>
+      <div class="row">
+        <div>
+          <label>Prefix</label>
+          <input id="namePrefix" type="text" placeholder="probe (blank uses FASTA id)" />
+        </div>
+        <div>
+          <label>Name pad width</label>
+          <input id="padWidth" type="number" min="1" max="6" value="2" />
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <button id="dlCsv" disabled>Download table CSV</button>
+        <button id="dlOpools" disabled>Download oPools CSV</button>
+        <span class="right muted" id="rowCount"></span>
+      </div>
+
+      <label>Search rows</label>
+      <input id="search" type="text" placeholder="filter table..." />
+
+      <div class="muted" style="margin-top:8px">
+        oPools export columns default to <b>Name,Sequence</b> and include separate LHS/RHS rows per probe.
+      </div>
+    </div>
+  </div>
+
+  <h3>Results</h3>
+  <div class="tablewrap">
+    <table id="table">
+      <thead></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
