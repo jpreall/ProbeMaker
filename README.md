@@ -1,6 +1,8 @@
 # ProbeMaker
 
-Browser-based designer for 10x Genomics Visium and Chromium Flex spike-in probes. Paste or upload FASTA, set assay options, and generate order-ready LHS/RHS oligos with required constant arms. No BLAST/off-target screening is performed in this web version.
+Browser-based designer for 10x Genomics Visium and Chromium Flex spike-in probes. Paste or upload FASTA, set assay options, and generate order-ready LHS/RHS oligos with required constant arms. No BLAST/off-target screening is performed in this web version.  
+  
+[ProbeMaker web interface](https://jpreall.github.io/ProbeMaker/)
 
 ## Features
 - 50 nt split probes (25/25) with GC and homopolymer constraints
