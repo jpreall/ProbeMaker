@@ -9,6 +9,11 @@ title: ProbeMaker
     .wrapper > section { width: 100% !important; max-width: none !important; }
     #title { width: 100% !important; }
     #header .fork { display: none; }
+    #title hr,
+    #title .credits { display: none; }
+    #header #title { margin: 10px 0 12px; }
+    #header #title h1 { margin: 0; font-size: 32px; }
+    #header #title p { margin: 4px 0 0; }
     .row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
     .card { border: 1px solid #8885; border-radius: 10px; padding: 12px; flex: 1 1 360px; }
     textarea { width: 100%; height: 180px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
@@ -185,3 +190,16 @@ ACGT..."></textarea>
   </div>
 
   <script src="./app.js"></script>
+  <script>
+    (function () {
+      const header = document.getElementById("header");
+      const title = document.getElementById("title");
+      if (!header || !title) return;
+      const nav = header.querySelector("nav");
+      if (nav) {
+        header.insertBefore(title, nav);
+      } else {
+        header.appendChild(title);
+      }
+    })();
+  </script>
