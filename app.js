@@ -537,26 +537,35 @@ els.file.addEventListener("change", async () => {
 
 els.run.addEventListener("click", () => {
   try {
-    els.status.textContent = "Running...";
+    const statusEl = els.status ?? document.getElementById("status");
+    const statsEl = els.stats ?? document.getElementById("stats");
+    if (statusEl) statusEl.textContent = "Running...";
     const params = getParams();
     const { rows, stats } = designProbes(els.fasta.value, params);
     lastDesign = { rows, stats };
 
-    els.stats.textContent =
-      `targets: ${stats.targets}\n` +
-      `total_bases: ${stats.total_bases}\n` +
-      `candidates (post-filters): ${stats.candidates}\n` +
-      `selected: ${stats.selected}\n`;
+    if (statsEl) {
+      statsEl.textContent =
+        `targets: ${stats.targets}\n` +
+        `total_bases: ${stats.total_bases}\n` +
+        `candidates (post-filters): ${stats.candidates}\n` +
+        `selected: ${stats.selected}\n`;
+    }
 
     els.dlCsv.disabled = rows.length === 0;
     els.dlOpools.disabled = rows.length === 0;
 
     sortState = { col: "probe_id", dir: "asc" };
     refreshTable();
-    els.status.textContent = rows.length ? "Done." : "No probes passed filters.";
+    if (statusEl) {
+      statusEl.textContent = rows.length ? "Done." : "No probes passed filters.";
+    }
   } catch (err) {
     console.error(err);
-    els.status.textContent = err?.message ? `Error: ${err.message}` : "Error (see console).";
+    const statusEl = els.status ?? document.getElementById("status");
+    if (statusEl) {
+      statusEl.textContent = err?.message ? `Error: ${err.message}` : "Error (see console).";
+    }
   }
 });
 
