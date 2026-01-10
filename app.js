@@ -149,8 +149,9 @@ function buildCandidates(seq, params) {
     const hpoly = maxHomopolymerRun(lhsTarget + rhsTarget);
     if (hpoly > params.maxHpoly) continue;
 
-    const targetGc = params.autoPick ? 0.5 : (params.gcMin + params.gcMax) / 2;
-    const gcWeight = params.autoPick ? 2.0 : 1.0;
+    const hasAutoPick = Number.isFinite(params.autoPickCount);
+    const targetGc = hasAutoPick ? 0.5 : (params.gcMin + params.gcMax) / 2;
+    const gcWeight = hasAutoPick ? 2.0 : 1.0;
     const gcPen = gcWeight * (Math.abs(gcL - targetGc) + Math.abs(gcR - targetGc));
     const score = 1.0 - gcPen - 0.05 * Math.max(0, hpoly - 3);
 
@@ -186,8 +187,7 @@ function selectWithSpacing(cands, minSpacing, maxProbes) {
 }
 
 function formatProbeRow(recId, probeIndex, cand, params) {
-  const prefix = params.namePrefix || recId;
-  const probeId = `${prefix}_${padNumber(probeIndex, params.padWidth)}`;
+  const probeId = `${recId}_${padNumber(probeIndex, 2)}`;
 
   const row = {
     sequence_id: recId,
@@ -251,8 +251,9 @@ function designProbes(fastaText, params) {
     }
     stats.total_bases += seq.length;
 
-    const effectiveMinSpacing = params.autoPick ? Math.max(params.minSpacing, PROBE_LEN) : params.minSpacing;
-    const effectiveMaxProbes = params.autoPick ? 3 : params.maxProbes;
+    const hasAutoPick = Number.isFinite(params.autoPickCount);
+    const effectiveMinSpacing = hasAutoPick ? Math.max(params.minSpacing, PROBE_LEN) : params.minSpacing;
+    const effectiveMaxProbes = hasAutoPick ? params.autoPickCount : Infinity;
 
     const candidates = buildCandidates(seq, params);
     stats.candidates += candidates.length;
@@ -374,11 +375,8 @@ const els = {
   gcMin: document.getElementById("gcMin"),
   gcMax: document.getElementById("gcMax"),
   maxHpoly: document.getElementById("maxHpoly"),
-  maxProbes: document.getElementById("maxProbes"),
+  autoPickCount: document.getElementById("autoPickCount"),
   ligationA: document.getElementById("ligationA"),
-  autoPick: document.getElementById("autoPick"),
-  namePrefix: document.getElementById("namePrefix"),
-  padWidth: document.getElementById("padWidth"),
 };
 
 let lastDesign = { rows: [], stats: null };
@@ -413,8 +411,8 @@ function getParams() {
   const flexBarcode = els.flexBarcode.value;
   const nn = els.flexNN.value.trim().toUpperCase();
 
-  if (assay === "visium" && visiumVersion && !["v1", "v2", "hd"].includes(visiumVersion)) {
-    throw new Error("Visium version must be v1, v2, hd, or blank.");
+  if (assay === "visium" && visiumVersion && visiumVersion !== "v1/v2/HD") {
+    throw new Error("Visium version must be v1/v2/HD.");
   }
 
   if (assay === "flex") {
@@ -445,9 +443,13 @@ function getParams() {
     throw new Error("Min spacing must be a non-negative number.");
   }
 
-  const maxProbes = Number(els.maxProbes.value);
-  if (!Number.isFinite(maxProbes) || maxProbes < 1) {
-    throw new Error("Max probes per target must be >= 1.");
+  const autoPickRaw = els.autoPickCount.value.trim();
+  let autoPickCount = null;
+  if (autoPickRaw) {
+    autoPickCount = Number(autoPickRaw);
+    if (!Number.isFinite(autoPickCount) || autoPickCount < 1) {
+      throw new Error("Auto-pick count must be >= 1, or blank for all.");
+    }
   }
 
   const maxHpoly = Number(els.maxHpoly.value);
@@ -458,11 +460,6 @@ function getParams() {
   const probeLen = Number(els.probeLen.value);
   if (probeLen !== PROBE_LEN) {
     throw new Error(`Probe length must be ${PROBE_LEN} nt for 25/25 split.`);
-  }
-
-  const padWidth = Number(els.padWidth.value);
-  if (!Number.isFinite(padWidth) || padWidth < 1) {
-    throw new Error("Name pad width must be >= 1.");
   }
 
   return {
@@ -477,27 +474,9 @@ function getParams() {
     gcMin,
     gcMax,
     maxHpoly,
-    maxProbes,
+    autoPickCount,
     ligationRequiresT: els.ligationA.checked,
-    autoPick: els.autoPick.checked,
-    namePrefix: els.namePrefix.value.trim(),
-    padWidth,
   };
-}
-
-let savedMaxProbes = els.maxProbes.value;
-
-function updateAutoPick() {
-  if (els.autoPick.checked) {
-    savedMaxProbes = els.maxProbes.value;
-    els.maxProbes.value = "3";
-    els.maxProbes.disabled = true;
-  } else {
-    els.maxProbes.disabled = false;
-    if (savedMaxProbes) {
-      els.maxProbes.value = savedMaxProbes;
-    }
-  }
 }
 
 function updateAssayControls() {
@@ -543,7 +522,6 @@ els.search.addEventListener("input", () => refreshTable());
 els.assay.addEventListener("change", () => updateAssayControls());
 els.flexVersion.addEventListener("change", () => updateAssayControls());
 els.flexMode.addEventListener("change", () => updateAssayControls());
-els.autoPick.addEventListener("change", () => updateAutoPick());
 
 els.example.addEventListener("click", () => {
   els.fasta.value = `>target1
@@ -600,4 +578,3 @@ els.dlOpools.addEventListener("click", () => {
 // initial render
 renderTable(els.table, [], TABLE_COLUMNS, sortState);
 updateAssayControls();
-updateAutoPick();

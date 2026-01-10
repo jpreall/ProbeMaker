@@ -69,10 +69,7 @@ ACGT..."></textarea>
       <div id="visiumOptions">
         <label>Visium version</label>
         <select id="visiumVersion">
-          <option value="">default</option>
-          <option value="v1">v1</option>
-          <option value="v2">v2</option>
-          <option value="hd">hd</option>
+          <option value="v1/v2/HD">v1/v2/HD</option>
         </select>
       </div>
 
@@ -152,26 +149,13 @@ ACGT..."></textarea>
           <input id="maxHpoly" type="number" min="1" max="30" value="6" />
         </div>
         <div>
-          <label>Max probes per target</label>
-          <input id="maxProbes" type="number" min="1" max="100000" value="12" />
+          <label>Auto-pick count (blank = all)</label>
+          <input id="autoPickCount" type="number" min="1" max="100000" value="3" />
         </div>
       </div>
 
       <div class="checkbox-row" style="margin-top: 6px;">
         <label><input id="ligationA" type="checkbox" checked /> Require LHS 3' base = T (ligation)</label>
-        <label><input id="autoPick" type="checkbox" /> Auto-pick (3 probes, spacing >= 50)</label>
-      </div>
-
-      <label>Output naming</label>
-      <div class="row">
-        <div>
-          <label>Prefix</label>
-          <input id="namePrefix" type="text" placeholder="probe (blank uses FASTA id)" />
-        </div>
-        <div>
-          <label>Name pad width</label>
-          <input id="padWidth" type="number" min="1" max="6" value="2" />
-        </div>
       </div>
 
       <div class="toolbar">
