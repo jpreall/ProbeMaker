@@ -356,7 +356,6 @@ const els = {
   run: document.getElementById("run"),
   status: document.getElementById("status"),
   stats: document.getElementById("stats"),
-  rowCount: document.getElementById("rowCount"),
   search: document.getElementById("search"),
   dlCsv: document.getElementById("dlCsv"),
   dlOpools: document.getElementById("dlOpools"),
@@ -501,7 +500,6 @@ function refreshTable() {
   const sorted = sortRows(filtered, sortState.col, sortState.dir);
   currentViewRows = sorted;
   renderTable(els.table, currentViewRows, TABLE_COLUMNS, sortState);
-  els.rowCount.textContent = `${currentViewRows.length.toLocaleString()} rows`;
 }
 
 els.table.addEventListener("click", (e) => {
