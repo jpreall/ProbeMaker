@@ -332,13 +332,16 @@ function filterRows(rows, query) {
 
 // -------- oPools export --------
 
-function toOpoolsRows(designRows) {
+function toOpoolsRows(designRows, poolName) {
   // IDT oPools can be as simple as Name,Sequence (commonly accepted).
   // If you want other fields (Scale, Purification, Plate, Well, etc.), add columns here.
   const rows = [];
+  const name = poolName || "poolOne";
   for (const r of designRows) {
-    rows.push({ Name: `${r.probe_id}_LHS`, Sequence: r.LHS_order_5to3 });
-    rows.push({ Name: `${r.probe_id}_RHS`, Sequence: r.RHS_order_5to3 });
+    rows.push({ "Pool name": name, Sequence: r.LHS_order_5to3 });
+  }
+  for (const r of designRows) {
+    rows.push({ "Pool name": name, Sequence: r.RHS_order_5to3 });
   }
   return rows;
 }
@@ -357,6 +360,7 @@ const els = {
   dlCsv: document.getElementById("dlCsv"),
   dlOpools: document.getElementById("dlOpools"),
   table: document.getElementById("table"),
+  poolName: document.getElementById("poolName"),
   assay: document.getElementById("assay"),
   visiumOptions: document.getElementById("visiumOptions"),
   visiumVersion: document.getElementById("visiumVersion"),
@@ -586,8 +590,9 @@ els.dlCsv.addEventListener("click", () => {
 });
 
 els.dlOpools.addEventListener("click", () => {
-  const opRows = toOpoolsRows(lastDesign.rows);
-  const cols = Object.keys(opRows[0] ?? { Name: "", Sequence: "" });
+  const poolName = els.poolName.value.trim() || "poolOne";
+  const opRows = toOpoolsRows(lastDesign.rows, poolName);
+  const cols = Object.keys(opRows[0] ?? { "Pool name": "", Sequence: "" });
   const csv = toCsv(opRows, cols);
   downloadText("opools.csv", csv);
 });
