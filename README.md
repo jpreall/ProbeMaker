@@ -40,5 +40,4 @@ Browser-based designer for 10x Genomics Visium and Chromium Flex spike-in probes
 - This web tool is meant for rapid probe design and ordering.
 - For BLAST/off-target filtering, use [ProbeDesign10X](https://github.com/jpreall/ProbeDesign10X).
 
-## License
-MIT
+License: MIT
